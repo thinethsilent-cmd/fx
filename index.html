@@ -32,14 +32,14 @@
 
         .predictor-ring {
             position: relative;
-            width: clamp(260px, 80vw, 320px);
-            height: clamp(260px, 80vw, 320px);
+            width: clamp(260px, 80vw, 300px);
+            height: clamp(260px, 80vw, 300px);
             border-radius: 50%;
             border: 2px solid #ff4d4d22;
             display: flex;
             align-items: center;
             justify-content: center;
-            margin: 1.5rem auto;
+            margin: 1rem auto;
             background: radial-gradient(circle, #fff 60%, #fff5f5 100%);
         }
 
@@ -54,10 +54,7 @@
 
         @keyframes rotate { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
 
-        .odds-display { font-size: 3.5rem; font-weight: 800; color: #ff4d4d; line-height: 1; margin-bottom: 8px; }
-
-        .pulse { animation: pulse-animation 2s infinite; }
-        @keyframes pulse-animation { 0% { transform: scale(1); } 50% { transform: scale(1.03); } 100% { transform: scale(1); } }
+        .odds-display { font-size: 3.2rem; font-weight: 800; color: #ff4d4d; line-height: 1; margin-bottom: 4px; }
 
         .hidden-page { display: none !important; }
 
@@ -75,6 +72,15 @@
             font-size: 12px;
             z-index: 1000;
             display: none;
+        }
+
+        .time-badge {
+            background: #f8f9fa;
+            border: 1px solid #eee;
+            padding: 4px 12px;
+            border-radius: 8px;
+            font-weight: 700;
+            color: #444;
         }
     </style>
 </head>
@@ -133,29 +139,46 @@
 
     <!-- PAGE 2: PREDICTOR -->
     <main id="predictorPage" class="app-container flex-grow flex flex-col justify-center hidden-page">
-        <div class="w-full text-center mb-4">
+        <div class="w-full text-center mb-2">
             <button onclick="goBack()" class="mb-4 text-gray-400 flex items-center justify-center gap-1 mx-auto text-xs font-bold uppercase tracking-widest hover:text-[#ff4d4d]">
                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path></svg>
                 Retour
             </button>
-            <h1 id="selectedProviderName" class="text-3xl font-extrabold text-gray-900 tracking-tight italic">Thinz fx</h1>
+            <h1 id="selectedProviderName" class="text-2xl font-extrabold text-gray-900 tracking-tight italic">Thinz fx</h1>
         </div>
 
-        <div class="predictor-ring shadow-2xl">
+        <!-- MAIN PREDICTION -->
+        <div class="predictor-ring shadow-xl">
             <div class="inner-ring" id="loader"></div>
             <div class="z-10 text-center flex flex-col items-center justify-center p-6">
-                <div class="text-[10px] text-gray-400 uppercase tracking-[0.2em] mb-2 font-bold">PREDICTED ODD</div>
+                <div class="text-[10px] text-gray-400 uppercase tracking-[0.2em] mb-1 font-bold">PREDICTED ODD</div>
                 <div class="odds-display" id="predictedOdd">0.00x</div>
-                <div class="text-xl font-bold text-gray-600" id="predictedTime">--:-- / --:--</div>
-                <div class="text-[10px] text-green-500 font-bold mt-2 tracking-widest" id="statusLabel">READY</div>
+                <div class="time-badge text-sm mb-2" id="predictedTime">--:-- / --:--</div>
+                <div class="text-[10px] text-green-500 font-bold tracking-widest" id="statusLabel">READY</div>
+            </div>
+        </div>
+
+        <!-- 2X SECONDARY GENERATOR -->
+        <div id="secondaryDisplay" class="w-full max-w-[280px] bg-gray-50 border border-gray-100 p-4 rounded-2xl mb-6 hidden">
+            <div class="flex items-center justify-between">
+                <div>
+                    <p class="text-[9px] font-black text-gray-400 uppercase tracking-tighter">SECURE TARGET</p>
+                    <p class="text-xl font-black text-gray-800">2.00x</p>
+                </div>
+                <div class="text-right">
+                    <p class="text-[9px] font-black text-gray-400 uppercase tracking-tighter">TIME WINDOW</p>
+                    <p class="text-xs font-bold text-gray-600" id="secondaryTime">--:-- / --:--</p>
+                </div>
             </div>
         </div>
 
         <div class="w-full max-w-[280px] mx-auto">
-            <button id="startBtn" class="w-full bg-green-500 text-white py-5 rounded-2xl shadow-xl font-bold text-lg uppercase active:scale-95 transition-all">
-                Start Analysis
+            <button id="startBtn" class="w-full bg-gray-900 text-white py-5 rounded-2xl shadow-xl font-bold text-lg uppercase active:scale-95 transition-all">
+                Generate Analysis
             </button>
         </div>
+
+        <p class="mt-8 text-[10px] text-gray-400 text-center">Application propulsée par <span class="text-red-500 font-bold">Hacker Aviator</span></p>
     </main>
 
     <script type="module">
@@ -163,7 +186,6 @@
         import { getFirestore, doc, getDoc, setDoc, collection } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
         import { getAuth, signInAnonymously, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
 
-        // Firebase Configuration (Provided by User)
         const firebaseConfig = {
             apiKey: "AIzaSyAu2rosyyF2AJi_hVo-8XhXGsofTJ9zzdQ",
             authDomain: "myapp-1bc82.firebaseapp.com",
@@ -179,7 +201,6 @@
         const auth = getAuth(app);
         const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
 
-        // Elements
         const loginPage = document.getElementById('loginPage');
         const selectionPage = document.getElementById('selectionPage');
         const predictorPage = document.getElementById('predictorPage');
@@ -188,10 +209,15 @@
         const loginError = document.getElementById('loginError');
         const loginLoader = document.getElementById('loginLoader');
 
-        let user = null;
+        // Check for existing valid key session
+        window.onload = () => {
+            const savedKey = localStorage.getItem('thinz_fx_key');
+            if(savedKey) {
+                licenseInput.value = savedKey;
+                validateKey();
+            }
+        };
 
-        // --- AUTH & FIRESTORE LOGIC ---
-        
         async function validateKey() {
             const key = licenseInput.value.trim().toUpperCase();
             if (!key.startsWith('THINXFX-')) {
@@ -205,19 +231,14 @@
 
             try {
                 if (!auth.currentUser) await signInAnonymously(auth);
-                
-                // Public collection for keys following Rule 1
                 const keyDocRef = doc(db, 'artifacts', appId, 'public', 'data', 'keys', key);
                 const keySnap = await getDoc(keyDocRef);
 
                 if (keySnap.exists()) {
                     const data = keySnap.data();
-                    const now = Date.now();
-                    
-                    if (data.expiresAt && now > data.expiresAt) {
+                    if (data.expiresAt && Date.now() > data.expiresAt) {
                         showError("Cette clé a expiré");
                     } else {
-                        // Success
                         loginPage.classList.add('hidden-page');
                         selectionPage.classList.remove('hidden-page');
                         localStorage.setItem('thinz_fx_key', key);
@@ -226,7 +247,6 @@
                     showError("Clé non trouvée");
                 }
             } catch (err) {
-                console.error(err);
                 showError("Erreur de connexion");
             } finally {
                 loginLoader.classList.add('hidden');
@@ -241,17 +261,6 @@
 
         loginBtn.addEventListener('click', validateKey);
 
-        // Security
-        document.addEventListener('keydown', (e) => {
-            if (e.keyCode === 123 || (e.ctrlKey && [85, 83, 73, 74, 67].includes(e.keyCode))) {
-                e.preventDefault();
-                const el = document.getElementById('securityAlert');
-                el.style.display = 'block';
-                setTimeout(() => el.style.display = 'none', 2000);
-            }
-        });
-
-        // Initialize App UI
         window.selectProvider = (provider) => {
             const colors = { '1xbet': '#125392', '888starz': '#e20613', 'melbet': '#f1b80d' };
             document.getElementById('selectedProviderName').textContent = provider.toUpperCase() + " PREDICTOR";
@@ -266,32 +275,61 @@
             document.getElementById('topBar').style.backgroundColor = '#ff4d4d';
         };
 
-        // Predictor Logic
+        // --- IMPROVED SIGNAL GENERATOR (4x - 10x Range) ---
         const startBtn = document.getElementById('startBtn');
         startBtn.addEventListener('click', () => {
             const loader = document.getElementById('loader');
             const oddEl = document.getElementById('predictedOdd');
             const timeEl = document.getElementById('predictedTime');
+            const secondaryTimeEl = document.getElementById('secondaryTime');
+            const secondaryDisplay = document.getElementById('secondaryDisplay');
             const status = document.getElementById('statusLabel');
 
             startBtn.disabled = true;
             status.textContent = "ANALYZING...";
-            loader.style.animationDuration = '2s';
+            status.className = "text-[10px] text-gray-400 font-bold mt-2 tracking-widest";
+            loader.style.animationDuration = '1s'; // Faster rotation during scan
 
             setTimeout(() => {
                 const now = new Date();
-                const h = (d) => String(d.getHours()).padStart(2, '0');
-                const m = (d) => String(d.getMinutes()).padStart(2, '0');
+                const formatTime = (date) => {
+                    return String(date.getHours()).padStart(2, '0') + ":" + String(date.getMinutes()).padStart(2, '0');
+                };
                 
-                const sT = new Date(now.getTime() + (Math.random() * 2 + 1) * 60000);
-                const eT = new Date(sT.getTime() + (Math.random() * 2 + 2) * 60000);
+                // --- Logic for 4x - 10x range ---
+                // Random float between 4.00 and 10.00
+                const minOdd = 4.00;
+                const maxOdd = 10.00;
+                const finalOdd = (Math.random() * (maxOdd - minOdd) + minOdd).toFixed(2);
 
-                oddEl.textContent = (Math.random() * 7 + 4).toFixed(2) + "x";
-                timeEl.textContent = `${h(sT)}:${m(sT)} / ${h(eT)}:${m(eT)}`;
+                // Prediction 1: Main High Odd (4x - 10x)
+                const startOffset1 = Math.floor(Math.random() * 2) + 1; // 1-2 mins from now
+                const endOffset1 = startOffset1 + 1;
+                const sT1 = new Date(now.getTime() + startOffset1 * 60000);
+                const eT1 = new Date(now.getTime() + endOffset1 * 60000);
+
+                // Prediction 2: Safe 2x Odd (Fixed target)
+                const startOffset2 = startOffset1 + 3; // a few mins later
+                const endOffset2 = startOffset2 + 1;
+                const sT2 = new Date(now.getTime() + startOffset2 * 60000);
+                const eT2 = new Date(now.getTime() + endOffset2 * 60000);
+
+                oddEl.textContent = finalOdd + "x";
+                timeEl.textContent = `${formatTime(sT1)} / ${formatTime(eT1)}`;
+                
+                secondaryTimeEl.textContent = `${formatTime(sT2)} / ${formatTime(eT2)}`;
+                secondaryDisplay.classList.remove('hidden');
+
                 status.textContent = "SIGNAL FOUND";
-                loader.style.animationDuration = '15s';
+                status.className = "text-[10px] text-green-500 font-bold mt-2 tracking-widest";
+                loader.style.animationDuration = '15s'; // Slower during result
                 startBtn.disabled = false;
-            }, 2000);
+            }, 2500); // Analysis delay
+        });
+
+        // Security preventions
+        document.addEventListener('keydown', (e) => {
+            if (e.keyCode === 123 || (e.ctrlKey && [85, 83, 73, 74, 67].includes(e.keyCode))) e.preventDefault();
         });
     </script>
 </body>
