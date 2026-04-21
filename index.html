@@ -153,7 +153,7 @@
             <div class="z-10 text-center flex flex-col items-center justify-center p-6">
                 <div class="text-[10px] text-gray-400 uppercase tracking-[0.2em] mb-1 font-bold">PREDICTED ODD</div>
                 <div class="odds-display" id="predictedOdd">0.00x</div>
-                <div class="time-badge text-sm mb-2" id="predictedTime">--:--:-- / --:--:--</div>
+                <div class="time-badge text-sm mb-2" id="predictedTime">--:-- / --:--</div>
                 <div class="text-[10px] text-green-500 font-bold tracking-widest" id="statusLabel">READY</div>
             </div>
         </div>
@@ -275,7 +275,7 @@
             document.getElementById('topBar').style.backgroundColor = '#ff4d4d';
         };
 
-        // --- IMPROVED SIGNAL GENERATOR (4x - 10x Range with Seconds) ---
+        // --- IMPROVED SIGNAL GENERATOR ---
         const startBtn = document.getElementById('startBtn');
         startBtn.addEventListener('click', () => {
             const loader = document.getElementById('loader');
@@ -292,6 +292,15 @@
 
             setTimeout(() => {
                 const now = new Date();
+                
+                // Format for HH:MM (Standard)
+                const formatTimeStandard = (date) => {
+                    const h = String(date.getHours()).padStart(2, '0');
+                    const m = String(date.getMinutes()).padStart(2, '0');
+                    return `${h}:${m}`;
+                };
+
+                // Format for HH:MM:SS (2x Only)
                 const formatTimeWithSeconds = (date) => {
                     const h = String(date.getHours()).padStart(2, '0');
                     const m = String(date.getMinutes()).padStart(2, '0');
@@ -303,21 +312,23 @@
                 const maxOdd = 10.00;
                 const finalOdd = (Math.random() * (maxOdd - minOdd) + minOdd).toFixed(2);
 
-                // Prediction 1: Main High Odd (4x - 10x)
-                const startOffset1 = Math.floor(Math.random() * 40) + 20; // 20-60 seconds from now
-                const endOffset1 = startOffset1 + 45; // 45 second window
-                const sT1 = new Date(now.getTime() + startOffset1 * 1000);
-                const eT1 = new Date(now.getTime() + endOffset1 * 1000);
+                // Prediction 1: Main High Odd (4x - 10x) - Shows HH:MM
+                const startOffset1 = Math.floor(Math.random() * 2) + 1; // 1-2 mins
+                const endOffset1 = startOffset1 + 1;
+                const sT1 = new Date(now.getTime() + startOffset1 * 60000);
+                const eT1 = new Date(now.getTime() + endOffset1 * 60000);
 
-                // Prediction 2: Safe 2x Odd (Fixed target)
-                const startOffset2 = startOffset1 + 120; // 2 mins later
-                const endOffset2 = startOffset2 + 60;
+                // Prediction 2: Safe 2x Odd - Shows HH:MM:SS
+                const startOffset2 = 120 + Math.floor(Math.random() * 60); // ~2 mins later
+                const endOffset2 = startOffset2 + 45;
                 const sT2 = new Date(now.getTime() + startOffset2 * 1000);
                 const eT2 = new Date(now.getTime() + endOffset2 * 1000);
 
                 oddEl.textContent = finalOdd + "x";
-                timeEl.textContent = `${formatTimeWithSeconds(sT1)} / ${formatTimeWithSeconds(eT1)}`;
+                // Only use HH:MM for main prediction
+                timeEl.textContent = `${formatTimeStandard(sT1)} / ${formatTimeStandard(eT1)}`;
                 
+                // Only use HH:MM:SS for 2x prediction
                 secondaryTimeEl.textContent = `${formatTimeWithSeconds(sT2)} / ${formatTimeWithSeconds(eT2)}`;
                 secondaryDisplay.classList.remove('hidden');
 
