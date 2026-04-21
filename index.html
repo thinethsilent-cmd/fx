@@ -1,0 +1,298 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Thinz fx - Predictor</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap');
+        
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #ffffff;
+            margin: 0;
+            padding: 0;
+            overflow-x: hidden;
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+            user-select: none;
+            -webkit-user-select: none;
+        }
+
+        .app-container {
+            width: 100%;
+            max-width: 100vw;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .predictor-ring {
+            position: relative;
+            width: clamp(260px, 80vw, 320px);
+            height: clamp(260px, 80vw, 320px);
+            border-radius: 50%;
+            border: 2px solid #ff4d4d22;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 1.5rem auto;
+            background: radial-gradient(circle, #fff 60%, #fff5f5 100%);
+        }
+
+        .inner-ring {
+            position: absolute;
+            width: 92%;
+            height: 92%;
+            border-radius: 50%;
+            border: 2px dashed #ff4d4d;
+            animation: rotate 15s linear infinite;
+        }
+
+        @keyframes rotate { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+
+        .odds-display { font-size: 3.5rem; font-weight: 800; color: #ff4d4d; line-height: 1; margin-bottom: 8px; }
+
+        .pulse { animation: pulse-animation 2s infinite; }
+        @keyframes pulse-animation { 0% { transform: scale(1); } 50% { transform: scale(1.03); } 100% { transform: scale(1); } }
+
+        .hidden-page { display: none !important; }
+
+        input:focus { outline: none; border-color: #ff4d4d; }
+
+        #securityAlert {
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(0,0,0,0.8);
+            color: white;
+            padding: 10px 20px;
+            border-radius: 30px;
+            font-size: 12px;
+            z-index: 1000;
+            display: none;
+        }
+    </style>
+</head>
+<body oncontextmenu="return false;">
+
+    <div id="securityAlert">Action non autorisée</div>
+    <div id="topBar" class="w-full bg-[#ff4d4d] h-1.5 shadow-sm"></div>
+
+    <!-- PAGE 0: LOGIN / KEY ENTRY -->
+    <main id="loginPage" class="app-container flex-grow flex flex-col justify-center py-10">
+        <div class="w-full text-center mb-8">
+            <h1 class="text-4xl font-black text-gray-900 tracking-tighter">THINZ FX</h1>
+            <p class="text-gray-400 text-xs mt-2 font-bold uppercase tracking-widest">Activation Requise</p>
+        </div>
+
+        <div class="w-full max-w-[320px] bg-white p-6 rounded-3xl shadow-2xl border border-gray-100">
+            <label class="block text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-2">License Key</label>
+            <input type="text" id="licenseKeyInput" placeholder="THINXFX-XXXX" 
+                class="w-full bg-gray-50 border-2 border-gray-100 rounded-xl px-4 py-4 text-center font-mono font-bold text-gray-700 mb-4 transition-all uppercase">
+            
+            <button id="loginBtn" class="w-full bg-gray-900 text-white font-bold py-4 rounded-xl shadow-lg active:scale-95 transition-transform flex items-center justify-center gap-2">
+                <span>ACTIVER</span>
+                <svg id="loginLoader" class="hidden animate-spin h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                </svg>
+            </button>
+            <p id="loginError" class="text-red-500 text-[10px] mt-4 text-center font-bold hidden uppercase tracking-wide">Clé invalide ou expirée</p>
+        </div>
+        
+        <p class="text-[10px] text-gray-300 mt-10 font-medium uppercase tracking-[0.2em]">Contact Admin for Access</p>
+    </main>
+
+    <!-- PAGE 1: PROVIDER SELECTION -->
+    <main id="selectionPage" class="app-container flex-grow flex flex-col justify-start pt-10 hidden-page">
+        <div class="w-full text-center mb-10">
+            <h1 class="text-3xl font-extrabold text-gray-900 tracking-tight">Thinz fx</h1>
+            <p class="text-gray-500 text-sm mt-2 font-medium">Choisissez votre plateforme</p>
+        </div>
+
+        <div class="grid grid-cols-1 gap-4 w-full max-w-[320px]">
+            <div onclick="selectProvider('1xbet')" class="bg-[#125392] p-5 rounded-2xl shadow-lg flex items-center justify-between cursor-pointer active:scale-95 transition-all">
+                <div class="flex flex-col"><span class="text-white font-black text-xl italic tracking-tighter">1xBET</span></div>
+                <div class="bg-white/10 p-2 rounded-full"><svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path></svg></div>
+            </div>
+            <div onclick="selectProvider('888starz')" class="bg-[#e20613] p-5 rounded-2xl shadow-lg flex items-center justify-between cursor-pointer active:scale-95 transition-all">
+                <div class="flex flex-col"><span class="text-white font-black text-xl italic tracking-tighter">888STARZ</span></div>
+                <div class="bg-white/10 p-2 rounded-full"><svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path></svg></div>
+            </div>
+            <div onclick="selectProvider('melbet')" class="bg-[#f1b80d] p-5 rounded-2xl shadow-lg flex items-center justify-between cursor-pointer active:scale-95 transition-all">
+                <div class="flex flex-col"><span class="text-[#232323] font-black text-xl italic tracking-tighter">MELBET</span></div>
+                <div class="bg-black/10 p-2 rounded-full"><svg class="w-6 h-6 text-[#232323]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path></svg></div>
+            </div>
+        </div>
+    </main>
+
+    <!-- PAGE 2: PREDICTOR -->
+    <main id="predictorPage" class="app-container flex-grow flex flex-col justify-center hidden-page">
+        <div class="w-full text-center mb-4">
+            <button onclick="goBack()" class="mb-4 text-gray-400 flex items-center justify-center gap-1 mx-auto text-xs font-bold uppercase tracking-widest hover:text-[#ff4d4d]">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path></svg>
+                Retour
+            </button>
+            <h1 id="selectedProviderName" class="text-3xl font-extrabold text-gray-900 tracking-tight italic">Thinz fx</h1>
+        </div>
+
+        <div class="predictor-ring shadow-2xl">
+            <div class="inner-ring" id="loader"></div>
+            <div class="z-10 text-center flex flex-col items-center justify-center p-6">
+                <div class="text-[10px] text-gray-400 uppercase tracking-[0.2em] mb-2 font-bold">PREDICTED ODD</div>
+                <div class="odds-display" id="predictedOdd">0.00x</div>
+                <div class="text-xl font-bold text-gray-600" id="predictedTime">--:-- / --:--</div>
+                <div class="text-[10px] text-green-500 font-bold mt-2 tracking-widest" id="statusLabel">READY</div>
+            </div>
+        </div>
+
+        <div class="w-full max-w-[280px] mx-auto">
+            <button id="startBtn" class="w-full bg-green-500 text-white py-5 rounded-2xl shadow-xl font-bold text-lg uppercase active:scale-95 transition-all">
+                Start Analysis
+            </button>
+        </div>
+    </main>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { getFirestore, doc, getDoc, setDoc, collection } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+        import { getAuth, signInAnonymously, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+
+        // Firebase Configuration (Provided by User)
+        const firebaseConfig = {
+            apiKey: "AIzaSyAu2rosyyF2AJi_hVo-8XhXGsofTJ9zzdQ",
+            authDomain: "myapp-1bc82.firebaseapp.com",
+            projectId: "myapp-1bc82",
+            storageBucket: "myapp-1bc82.firebasestorage.app",
+            messagingSenderId: "723618358633",
+            appId: "1:723618358633:web:24c6a343707c53de7009f8",
+            measurementId: "G-2T0XL00LHH"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+        const auth = getAuth(app);
+        const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
+
+        // Elements
+        const loginPage = document.getElementById('loginPage');
+        const selectionPage = document.getElementById('selectionPage');
+        const predictorPage = document.getElementById('predictorPage');
+        const licenseInput = document.getElementById('licenseKeyInput');
+        const loginBtn = document.getElementById('loginBtn');
+        const loginError = document.getElementById('loginError');
+        const loginLoader = document.getElementById('loginLoader');
+
+        let user = null;
+
+        // --- AUTH & FIRESTORE LOGIC ---
+        
+        async function validateKey() {
+            const key = licenseInput.value.trim().toUpperCase();
+            if (!key.startsWith('THINXFX-')) {
+                showError("Format de clé invalide");
+                return;
+            }
+
+            loginLoader.classList.remove('hidden');
+            loginError.classList.add('hidden');
+            loginBtn.disabled = true;
+
+            try {
+                if (!auth.currentUser) await signInAnonymously(auth);
+                
+                // Public collection for keys following Rule 1
+                const keyDocRef = doc(db, 'artifacts', appId, 'public', 'data', 'keys', key);
+                const keySnap = await getDoc(keyDocRef);
+
+                if (keySnap.exists()) {
+                    const data = keySnap.data();
+                    const now = Date.now();
+                    
+                    if (data.expiresAt && now > data.expiresAt) {
+                        showError("Cette clé a expiré");
+                    } else {
+                        // Success
+                        loginPage.classList.add('hidden-page');
+                        selectionPage.classList.remove('hidden-page');
+                        localStorage.setItem('thinz_fx_key', key);
+                    }
+                } else {
+                    showError("Clé non trouvée");
+                }
+            } catch (err) {
+                console.error(err);
+                showError("Erreur de connexion");
+            } finally {
+                loginLoader.classList.add('hidden');
+                loginBtn.disabled = false;
+            }
+        }
+
+        function showError(msg) {
+            loginError.textContent = msg;
+            loginError.classList.remove('hidden');
+        }
+
+        loginBtn.addEventListener('click', validateKey);
+
+        // Security
+        document.addEventListener('keydown', (e) => {
+            if (e.keyCode === 123 || (e.ctrlKey && [85, 83, 73, 74, 67].includes(e.keyCode))) {
+                e.preventDefault();
+                const el = document.getElementById('securityAlert');
+                el.style.display = 'block';
+                setTimeout(() => el.style.display = 'none', 2000);
+            }
+        });
+
+        // Initialize App UI
+        window.selectProvider = (provider) => {
+            const colors = { '1xbet': '#125392', '888starz': '#e20613', 'melbet': '#f1b80d' };
+            document.getElementById('selectedProviderName').textContent = provider.toUpperCase() + " PREDICTOR";
+            document.getElementById('topBar').style.backgroundColor = colors[provider];
+            selectionPage.classList.add('hidden-page');
+            predictorPage.classList.remove('hidden-page');
+        };
+
+        window.goBack = () => {
+            predictorPage.classList.add('hidden-page');
+            selectionPage.classList.remove('hidden-page');
+            document.getElementById('topBar').style.backgroundColor = '#ff4d4d';
+        };
+
+        // Predictor Logic
+        const startBtn = document.getElementById('startBtn');
+        startBtn.addEventListener('click', () => {
+            const loader = document.getElementById('loader');
+            const oddEl = document.getElementById('predictedOdd');
+            const timeEl = document.getElementById('predictedTime');
+            const status = document.getElementById('statusLabel');
+
+            startBtn.disabled = true;
+            status.textContent = "ANALYZING...";
+            loader.style.animationDuration = '2s';
+
+            setTimeout(() => {
+                const now = new Date();
+                const h = (d) => String(d.getHours()).padStart(2, '0');
+                const m = (d) => String(d.getMinutes()).padStart(2, '0');
+                
+                const sT = new Date(now.getTime() + (Math.random() * 2 + 1) * 60000);
+                const eT = new Date(sT.getTime() + (Math.random() * 2 + 2) * 60000);
+
+                oddEl.textContent = (Math.random() * 7 + 4).toFixed(2) + "x";
+                timeEl.textContent = `${h(sT)}:${m(sT)} / ${h(eT)}:${m(eT)}`;
+                status.textContent = "SIGNAL FOUND";
+                loader.style.animationDuration = '15s';
+                startBtn.disabled = false;
+            }, 2000);
+        });
+    </script>
+</body>
+</html>
